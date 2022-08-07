@@ -4,6 +4,10 @@ GET http://localhost:3030/api/quotes
 
 ### 
 # Get one 
+GET http://localhost:3030/api/quotes?page=1&limit=2
+
+### 
+# Get paginated 
 GET http://localhost:3030/api/quotes/3
 
 ### 
