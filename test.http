@@ -14,12 +14,12 @@ DELETE http://localhost:3030/api/quotes/1
 
 ###
 # Post quote
-POST http://localhost:3030/api/quotes
+POST https://intense-mesa-23327.herokuapp.com/api/quotes
 content-type: application/json
 
 {
-    "author": "test quotexx",
-    "quote": "a"
+    "quote": "That makes me so mad and so sad. I'm smad!",
+    "author": "Sookie St. James"
 }
 
 ### 
