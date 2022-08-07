@@ -1,0 +1,23 @@
+### 
+# Get all 
+GET http://localhost:3030/api/quotes
+
+### 
+# Get one 
+GET http://localhost:3030/api/quotes/3
+
+### 
+# Delete one 
+DELETE http://localhost:3030/api/quotes/1
+
+
+
+###
+# Post user
+POST http://localhost:3030/api/quotes
+content-type: application/json
+
+{
+    "quote": "bla blah",
+    "author": "Blah"
+}
