@@ -5,17 +5,28 @@
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
-    "dev": "nodemon index.js"
+    "dev": "nodemon index.js",
+    "lint": "eslint .",
+    "format": "npx prettier --write ."
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "nodemon": "^2.0.19"
+    "eslint": "^8.21.0",
+    "husky": "^8.0.1",
+    "nodemon": "^2.0.19",
+    "prettier": "^2.7.1",
+    "pretty-quick": "^3.1.3"
   },
   "dependencies": {
     "dotenv": "^16.0.1",
     "express": "^4.18.1",
     "mongoose": "^6.5.1"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "pretty-quick --staged"
+    }
   }
 }

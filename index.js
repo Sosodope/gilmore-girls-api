@@ -5,9 +5,7 @@ const app = express()
 const Quote = require('./models/quote')
 
 const notFound = (_, res) => {
-  res
-    .status(404)
-    .send({ error: "Oh no, we couldn't find what you were looking for." })
+  res.status(404).send({ error: 'Not found' })
 }
 
 const errorHandler = (error, _, res, next) => {
@@ -32,7 +30,7 @@ app.get('/api/quotes', async (_, res) => {
   res.json(quotes)
 })
 
-app.delete('/api/quotes/:id', async (req, res) => {
+app.delete('/api/quotes/:id', async (req, res, next) => {
   const { id } = req.params
   try {
     await Quote.findByIdAndDelete(id)
