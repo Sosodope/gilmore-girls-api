@@ -13,11 +13,21 @@ DELETE http://localhost:3030/api/quotes/1
 
 
 ###
-# Post user
+# Post quote
 POST http://localhost:3030/api/quotes
 content-type: application/json
 
 {
-    "quote": "bla blah",
+    "author": "test quotexx",
+    "quote": "a"
+}
+
+### 
+# Edit quote
+PUT http://localhost:3030/api/quotes/62ef6f879aa1a9677f16c22e
+content-type: application/json
+
+{
+    "quote": "blah blah....",
     "author": "Blah"
 }

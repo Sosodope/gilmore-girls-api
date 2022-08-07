@@ -1,85 +1,99 @@
-require('dotenv')
+require('dotenv').config()
 const express = require('express')
 
 const app = express()
+const Quote = require('./models/quote')
 
 const notFound = (_, res) => {
-  res
-    .status(404)
-    .send({ error: "Oh no, we couldn't find what you were looking for." })
+  res.status(404).send({ error: 'Not found' })
+}
+
+const errorHandler = (error, _, res, next) => {
+  console.log('error--', error)
+  switch (error.name) {
+    case 'CastError':
+      return res.status(400).send({ error: 'There was an issue with the id' })
+    case 'ValidationError':
+      return res.status(400).send({ error: error.message })
+    default:
+      break
+  }
+  next(error)
 }
 
 // express json-parser - to access incoming data
 app.use(express.json())
 
-let quotes = [
-  {
-    id: 0,
-    quote:
-      'I don’t like Mondays, but unfortunately, they come around eventually.',
-    author: 'Lorelai Gilmore',
-  },
-  {
-    id: 1,
-    quote: 'A little nervous breakdown can work wonders for a girl.',
-    author: 'Rory Gilmore',
-  },
-  {
-    id: 2,
-    quote:
-      'I want to get the healthy glow of someone who goes consistently to the gym without actually having to go, of course.',
-    author: 'Kirk Gleason',
-  },
-  {
-    id: 3,
-    quote: "People are particularly stupid today. I can't talk anymore.",
-    author: 'Michel Gerard',
-  },
-  {
-    id: 4,
-    quote: "That makes me so mad and so sad. I'm smad!",
-    author: 'Sookie St. James',
-  },
-]
-
-app.get('/api/quotes', (_, res) => {
+app.get('/api/quotes', async (_, res) => {
+  // res.json(quotes)
+  const quotes = await Quote.find({})
   res.json(quotes)
 })
 
-app.delete('/api/quotes/:id', (req, res) => {
-  const id = Number(req.params.id)
-  quotes = quotes.filter((i) => i.id !== id)
-  res.status(204).end()
+app.delete('/api/quotes/:id', async (req, res, next) => {
+  const { id } = req.params
+  try {
+    await Quote.findByIdAndDelete(id)
+    res.status(204).end()
+  } catch (error) {
+    next(error)
+  }
 })
 
-app.get('/api/quotes/:id', (req, res) => {
-  const id = Number(req.params.id)
-  const quote = quotes.find((i) => i.id === id)
-  quote ? res.json(quote) : res.status(404).end()
+app.get('/api/quotes/:id', async (req, res, next) => {
+  const { id } = req.params
+  try {
+    const result = await Quote.findById(id)
+    res.json(result)
+  } catch (error) {
+    next(error)
+  }
 })
 
-app.post('/api/quotes', (req, res) => {
-  const body = req.body
-  if (!body.quote) {
+app.put('/api/quotes/:id', async (req, res, next) => {
+  const { id } = req.params
+  const { quote, author } = req.body
+
+  try {
+    const newQuote = {
+      quote,
+      author,
+    }
+    const result = await Quote.findByIdAndUpdate(id, newQuote, {
+      new: true,
+      runValidators: true,
+      context: 'query',
+    })
+    res.json(result)
+  } catch (error) {
+    next(error)
+  }
+})
+
+app.post('/api/quotes', async (req, res, next) => {
+  const { quote, author } = req.body
+  if (!quote || !author) {
     return res.status(400).json({
-      error: 'Quote is missing',
+      error: 'Some data seems to be missing',
     })
   }
-  const nextId =
-    quotes.length > 0 ? Math.max(...quotes.map((n) => n.id)) + 1 : 1
+  try {
+    const entry = new Quote({
+      date: new Date(),
+      quote,
+      author,
+    })
 
-  const quote = {
-    id: nextId,
-    date: new Date(),
-    quote: body.quote,
-    author: body.author,
+    const result = await entry.save()
+    res.json(result)
+  } catch (error) {
+    next(error)
   }
-
-  quotes = quotes.concat(quote)
-  res.json(quote)
 })
 
+// custom middlewares
 app.use(notFound)
+app.use(errorHandler)
 
 const PORT = process.env.PORT || 3030
 app.listen(PORT, () => {
