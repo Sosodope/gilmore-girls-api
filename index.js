@@ -24,10 +24,34 @@ const errorHandler = (error, _, res, next) => {
 // express json-parser - to access incoming data
 app.use(express.json())
 
-app.get('/api/quotes', async (_, res) => {
-  // res.json(quotes)
-  const quotes = await Quote.find({})
-  res.json(quotes)
+app.get('/api/quotes', async (req, res, next) => {
+  const page = parseInt(req.query.page)
+  const limit = parseInt(req.query.limit)
+  const startIndex = (page - 1) * limit
+  const endIndex = page * limit
+
+  const results = {}
+
+  if (endIndex < (await Quote.countDocuments().exec())) {
+    results.next = {
+      page: page + 1,
+      limit: limit,
+    }
+  }
+
+  if (startIndex > 0) {
+    results.previous = {
+      page: page - 1,
+      limit: limit,
+    }
+  }
+
+  try {
+    results.results = await Quote.find().limit(limit).skip(startIndex).exec()
+    res.json(results)
+  } catch (error) {
+    next(error)
+  }
 })
 
 app.delete('/api/quotes/:id', async (req, res, next) => {
