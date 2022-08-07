@@ -11,9 +11,19 @@ mongoose
   })
 
 const quoteSchema = new mongoose.Schema({
-  date: Date,
-  quote: String,
-  author: String,
+  date: {
+    type: Date,
+    required: true,
+  },
+  quote: {
+    type: String,
+    minLength: 2,
+    required: true,
+  },
+  author: {
+    type: String,
+    required: true,
+  },
 })
 
 quoteSchema.set('toJSON', {

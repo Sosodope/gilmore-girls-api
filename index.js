@@ -11,8 +11,14 @@ const notFound = (_, res) => {
 }
 
 const errorHandler = (error, _, res, next) => {
-  if (error.name === 'CastError') {
-    return res.status(400).send({ error: 'There was an issue with the id' })
+  console.log('error--', error)
+  switch (error.name) {
+    case 'CastError':
+      return res.status(400).send({ error: 'There was an issue with the id' })
+    case 'ValidationError':
+      return res.status(400).send({ error: error.message })
+    default:
+      break
   }
   next(error)
 }
@@ -48,34 +54,43 @@ app.get('/api/quotes/:id', async (req, res, next) => {
 
 app.put('/api/quotes/:id', async (req, res, next) => {
   const { id } = req.params
-  const body = req.body
+  const { quote, author } = req.body
+
   try {
     const newQuote = {
-      quote: body.quote,
-      author: body.body,
+      quote,
+      author,
     }
-    const result = await Quote.findByIdAndUpdate(id, newQuote, { new: true })
+    const result = await Quote.findByIdAndUpdate(id, newQuote, {
+      new: true,
+      runValidators: true,
+      context: 'query',
+    })
     res.json(result)
   } catch (error) {
     next(error)
   }
 })
 
-app.post('/api/quotes', async (req, res) => {
-  const body = req.body
-  if (!body.quote) {
+app.post('/api/quotes', async (req, res, next) => {
+  const { quote, author } = req.body
+  if (!quote || !author) {
     return res.status(400).json({
-      error: 'Quote is missing',
+      error: 'Some data seems to be missing',
     })
   }
-  const quote = new Quote({
-    date: new Date(),
-    quote: body.quote,
-    author: body.author,
-  })
+  try {
+    const entry = new Quote({
+      date: new Date(),
+      quote,
+      author,
+    })
 
-  const result = await quote.save()
-  res.json(result)
+    const result = await entry.save()
+    res.json(result)
+  } catch (error) {
+    next(error)
+  }
 })
 
 // custom middlewares

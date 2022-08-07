@@ -18,8 +18,8 @@ POST http://localhost:3030/api/quotes
 content-type: application/json
 
 {
-    "quote": "bla blah",
-    "author": "Blah"
+    "author": "test quotexx",
+    "quote": "a"
 }
 
 ### 
