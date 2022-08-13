@@ -18,12 +18,14 @@ DELETE http://localhost:3030/api/quotes/1
 
 ###
 # Post quote
-POST https://intense-mesa-23327.herokuapp.com/api/quotes
+# POST https://intense-mesa-23327.herokuapp.com/api/quotes
+POST http://localhost:3030/api/quotes
 content-type: application/json
 
 {
-    "quote": "That makes me so mad and so sad. I'm smad!",
-    "author": "Sookie St. James"
+    "quote": "That makes me so mad and so sad. I'm sss!",
+    "author": "Sookie St. James",
+    "userId": "62f7571d3a6ee1abdd1b2b67"
 }
 
 ### 
@@ -32,6 +34,32 @@ PUT http://localhost:3030/api/quotes/62ef6f879aa1a9677f16c22e
 content-type: application/json
 
 {
-    "quote": "blah blah....",
-    "author": "Blah"
+    "quote": "blah test....",
+    "author": "Blah",
+    
+}
+
+
+
+### 
+# Post user 
+POST http://localhost:3030/api/users 
+content-type: application/json
+
+{
+    "username": "test210", "password": "2022test", "name": "test test"
+
+}
+
+### 
+# get users 
+GET http://localhost:3030/api/users
+
+### 
+# Login a user 
+POST http://localhost:3030/api/login content-type: application/json
+
+{
+    "username": "test210", "password": "2022test"
+
 }
