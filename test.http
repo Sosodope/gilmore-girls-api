@@ -12,7 +12,8 @@ GET http://localhost:3030/api/quotes/3
 
 ### 
 # Delete one 
-DELETE http://localhost:3030/api/quotes/1
+DELETE http://localhost:3030/api/quotes/62f7594079bb79aba4a1927d
+Authorization: bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImFkbWluR0ciLCJpZCI6IjYyZjc2MTM4Y2NlZmE4ZDYxNjhjMWNkYyIsImlhdCI6MTY2MDM4MTYwNiwiZXhwIjoxNjYwMzg1MjA2fQ.Mqam9TwTtDEwWKk1m0A8cmfK3pIclt29Krket4qOwAE
 
 
 
@@ -42,7 +43,7 @@ content-type: application/json
 
 
 ### 
-# Post user 
+# Sign up user 
 POST http://localhost:3030/api/users 
 content-type: application/json
 
@@ -57,9 +58,22 @@ GET http://localhost:3030/api/users
 
 ### 
 # Login a user 
-POST http://localhost:3030/api/login content-type: application/json
+POST http://localhost:3030/api/login 
+content-type: application/json
 
 {
-    "username": "test210", "password": "2022test"
+    "username": "test", "password": "test"
 
+}
+
+
+###
+# POST
+POST http://localhost:3030/api/quotes
+Content-Type: application/json
+# Authorization: bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImFkbWluR0ciLCJpZCI6IjYyZjc2MTM4Y2NlZmE4ZDYxNjhjMWNkYyIsImlhdCI6MTY2MDM4MTYwNiwiZXhwIjoxNjYwMzg1MjA2fQ.Mqam9TwTtDEwWKk1m0A8cmfK3pIclt29Krket4qOwAE
+
+{
+    "quote": "Ahhh", 
+    "author": "Sookie St. James"
 }

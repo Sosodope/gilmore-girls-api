@@ -1,6 +1,15 @@
 const quotesRouter = require('express').Router()
+const jwt = require('jsonwebtoken')
 const Quote = require('../models/quote')
 const User = require('../models/user')
+
+const getTokenFromReq = (req) => {
+  const authorization = req.get('authorization')
+  if (authorization && authorization.toLowerCase().startsWith('bearer ')) {
+    return authorization.substring(7)
+  }
+  return null
+}
 
 quotesRouter.get('/', async (req, res, next) => {
   const page = parseInt(req.query.page)
@@ -34,11 +43,20 @@ quotesRouter.get('/', async (req, res, next) => {
 
 quotesRouter.delete('/:id', async (req, res, next) => {
   const { id } = req.params
-  try {
-    await Quote.findByIdAndDelete(id)
-    res.status(204).end()
-  } catch (error) {
-    next(error)
+  const token = getTokenFromReq(req)
+  const decodedToken = jwt.verify(token, process.env.SECRET)
+
+  if (!decodedToken.id) {
+    return res.status(401).json({ error: 'Invalid token' })
+  }
+  const user = await User.findById(decodedToken.id)
+  if (user.username === 'adminGG') {
+    try {
+      await Quote.findByIdAndDelete(id)
+      res.status(204).end()
+    } catch (error) {
+      next(error)
+    }
   }
 })
 
@@ -52,47 +70,34 @@ quotesRouter.get('/:id', async (req, res, next) => {
   }
 })
 
-quotesRouter.put('/:id', async (req, res, next) => {
-  const { id } = req.params
-  const { quote, author } = req.body
-
-  try {
-    const newQuote = {
-      quote,
-      author,
-    }
-    const result = await Quote.findByIdAndUpdate(id, newQuote, {
-      new: true,
-      runValidators: true,
-      context: 'query',
-    })
-    res.json(result)
-  } catch (error) {
-    next(error)
-  }
-})
-
 quotesRouter.post('/', async (req, res, next) => {
-  const { quote, author, userId } = req.body
-
-  const user = await User.findById(userId)
-  if (!quote || !author) {
+  const body = req.body
+  if (!body.quote || !body.author) {
     return res.status(400).json({
       error: 'Some data seems to be missing',
     })
   }
+
+  const token = getTokenFromReq(req)
+  const decodedToken = jwt.verify(token, process.env.SECRET)
+
+  if (!decodedToken.id) {
+    return res.status(401).json({ error: 'Invalid token' })
+  }
+
+  const user = await User.findById(decodedToken.id)
   try {
     const entry = new Quote({
       date: new Date(),
-      quote,
-      author,
+      quote: body.quote,
+      author: body.author,
       user: user._id,
     })
 
     const result = await entry.save()
     user.quotes = user.quotes.concat(result._id)
     await user.save()
-    res.json(result)
+    return res.status(201).json(result)
   } catch (error) {
     next(error)
   }
