@@ -2,7 +2,9 @@ require('dotenv').config()
 const express = require('express')
 
 const app = express()
-const Quote = require('./models/quote')
+const usersRouter = require('./controllers/users')
+const quotesRouter = require('./controllers/quotes')
+const loginRouter = require('./controllers/login')
 
 const notFound = (_, res) => {
   res.status(404).send({ error: 'Not found' })
@@ -15,6 +17,8 @@ const errorHandler = (error, _, res, next) => {
       return res.status(400).send({ error: 'There was an issue with the id' })
     case 'ValidationError':
       return res.status(400).send({ error: error.message })
+    case 'TokenExpiredError':
+      return res.status(401).json({ error: 'token expired' })
     default:
       break
   }
@@ -24,96 +28,9 @@ const errorHandler = (error, _, res, next) => {
 // express json-parser - to access incoming data
 app.use(express.json())
 
-app.get('/api/quotes', async (req, res, next) => {
-  const page = parseInt(req.query.page)
-  const limit = parseInt(req.query.limit)
-  const startIndex = (page - 1) * limit
-  const endIndex = page * limit
-
-  const results = {}
-
-  if (endIndex < (await Quote.countDocuments().exec())) {
-    results.next = {
-      page: page + 1,
-      limit: limit,
-    }
-  }
-
-  if (startIndex > 0) {
-    results.previous = {
-      page: page - 1,
-      limit: limit,
-    }
-  }
-
-  try {
-    results.results = await Quote.find().limit(limit).skip(startIndex).exec()
-    res.json(results)
-  } catch (error) {
-    next(error)
-  }
-})
-
-app.delete('/api/quotes/:id', async (req, res, next) => {
-  const { id } = req.params
-  try {
-    await Quote.findByIdAndDelete(id)
-    res.status(204).end()
-  } catch (error) {
-    next(error)
-  }
-})
-
-app.get('/api/quotes/:id', async (req, res, next) => {
-  const { id } = req.params
-  try {
-    const result = await Quote.findById(id)
-    res.json(result)
-  } catch (error) {
-    next(error)
-  }
-})
-
-app.put('/api/quotes/:id', async (req, res, next) => {
-  const { id } = req.params
-  const { quote, author } = req.body
-
-  try {
-    const newQuote = {
-      quote,
-      author,
-    }
-    const result = await Quote.findByIdAndUpdate(id, newQuote, {
-      new: true,
-      runValidators: true,
-      context: 'query',
-    })
-    res.json(result)
-  } catch (error) {
-    next(error)
-  }
-})
-
-app.post('/api/quotes', async (req, res, next) => {
-  const { quote, author } = req.body
-  if (!quote || !author) {
-    return res.status(400).json({
-      error: 'Some data seems to be missing',
-    })
-  }
-  try {
-    const entry = new Quote({
-      date: new Date(),
-      quote,
-      author,
-    })
-
-    const result = await entry.save()
-    res.json(result)
-  } catch (error) {
-    next(error)
-  }
-})
+app.use('/api/quotes', quotesRouter)
+app.use('/api/users', usersRouter)
+app.use('/api/login', loginRouter)
 
 // custom middlewares
 app.use(notFound)
